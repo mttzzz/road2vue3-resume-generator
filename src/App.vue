@@ -1,70 +1,115 @@
 <template>
-  <div class="container column">
-    <form class="card card-w30">
-      <div class="form-control">
-        <label for="type">Тип блока</label>
-        <select id="type">
-          <option value="title">Заголовок</option>
-          <option value="subtitle">Подзаголовок</option>
-          <option value="avatar">Аватар</option>
-          <option value="text">Текст</option>
-        </select>
-      </div>
-
-      <div class="form-control">
-        <label for="value">Значение</label>
-        <textarea id="value" rows="3"></textarea>
-      </div>
-
-      <button class="btn primary">Добавить</button>
-    </form>
-
-    <div class="card card-w70">
-      <h1>Резюме Nickname</h1>
-      <div class="avatar">
-        <img src="https://cdn.dribbble.com/users/5592443/screenshots/14279501/drbl_pop_r_m_rick_4x.png">
-      </div>
-      <h2>Опыт работы</h2>
+  <div>
+    <div class="container column">
+      <app-resume-form @submit="updateResume"></app-resume-form>
+      <app-resume
+        v-if="true"
+        :title="title"
+        :avatar="avatar"
+        :comboBlocks="comboBlocks"
+        @remove="removeCombo"
+      ></app-resume>
+    </div>
+    <div class="container">
       <p>
-        главный герой американского мультсериала «Рик и Морти», гениальный учёный, изобретатель, атеист (хотя в некоторых сериях он даже молится Богу, однако, каждый раз после чудесного спасения ссылается на удачу и вновь отвергает его существование), алкоголик, социопат, дедушка Морти. На момент начала третьего сезона ему 70 лет[1]. Рик боится пиратов, а его главной слабостью является некий - "Санчезиум". Исходя из того, что существует неограниченное количество вселенных, существует неограниченное количество Риков, герой сериала предположительно принадлежит к измерению С-137. В серии комикcов Рик относится к измерению C-132, а в игре «Pocket Mortys» — к измерению C-123[2]. Прототипом Рика Санчеза является Эмметт Браун, герой кинотрилогии «Назад в будущее»[3].
+        <button class="btn primary" @click="loadComments">Загрузить комментарии</button>
       </p>
-      <h3>Добавьте первый блок, чтобы увидеть результат</h3>
+      <app-loader v-if="loadingComments"></app-loader>
+      <app-comments :comments="comments" v-if="comments.length"></app-comments>
     </div>
-  </div>
-  <div class="container">
-    <p>
-      <button class="btn primary">Загрузить комментарии</button>
-    </p>
-    <div class="card">
-      <h2>Комментарии</h2>
-      <ul class="list">
-        <li class="list-item">
-          <div>
-            <p><strong>test@microsoft.com</strong></p>
-            <small>Lorem ipsum dolor sit amet, consectetur adipisicing elit. Eligendi, reiciendis.</small>
-          </div>
-        </li>
-      </ul>
-    </div>
-    <div class="loader"></div>
   </div>
 </template>
 
 <script>
-export default {
+import axios from 'axios'
+import AppResumeForm from '@/components/AppResumeForm'
+import AppComments from '@/components/AppComments'
+import AppResume from '@/components/AppResume'
+import AppLoader from '@/components/AppLoader'
 
+export default {
+  name: 'App',
+  components: {AppResumeForm, AppResume, AppComments, AppLoader},
+  data: () => ({
+    loadingComments: false,
+    loadingResume: true,
+    title: null,
+    avatar: null,
+    comboBlocks: [],
+    subtitle: null,
+    text: null,
+    comments: [],
+    dbUrl: 'https://vue-3-resume-generator-default-rtdb.europe-west1.firebasedatabase.app/'
+  }),
+  computed: {},
+  methods: {
+    async updateResume({type, value}) {
+      if (type !== 'combo') {
+        this[type] = value
+        await axios.put(this.dbUrl + `resume/${type}.json`, {value})
+      } else {
+        const {data} = await axios.post(this.dbUrl + 'resume/comboBlocks.json', value)
+        value.id = data.name
+        this.comboBlocks.push(value)
+      }
+    },
+    async loadComments() {
+      this.loadingComments = true
+      try {
+        const url = 'https://jsonplaceholder.typicode.com/comments'
+        const {data} = await axios.get(url, {params: {_limit: 42}})
+        this.comments = data
+        this.loadingComments = false
+      } catch (e) {
+        alert(e.message)
+        this.loadingComments = false
+      }
+    },
+    async removeCombo(id) {
+      try {
+        await axios.delete(this.dbUrl + `resume/comboBlocks/${id}.json`)
+        this.comboBlocks = this.comboBlocks.filter(cb => cb.id !== id)
+      } catch (e) {
+        console.warn(e.message)
+      }
+    },
+    async loadResume() {
+      try {
+        const {data} = await axios.get(this.dbUrl + 'resume.json')
+        if (data) {
+          Object.keys(data).forEach(key => {
+            if (key === 'comboBlocks') {
+              this.comboBlocks = Object.keys(data[key]).map(idx => ({
+                id: idx,
+                ...data[key][idx]
+              }))
+            } else {
+              this[key] = data[key].value
+            }
+          })
+        }
+        this.loadingResume = false
+      } catch (e) {
+        this.loadingResume = false
+        console.warn(e.message)
+      }
+    }
+  },
+  async mounted() {
+    await this.loadResume()
+  }
 }
 </script>
 
 <style>
-  .avatar {
-    display: flex;
-    justify-content: center;
-  }
+.avatar {
+  display: flex;
+  justify-content: center;
+}
 
-  .avatar img {
-    width: 150px;
-    height: auto;
-    border-radius: 50%;
-  }
+.avatar img {
+  width: 150px;
+  height: auto;
+  border-radius: 50%;
+}
 </style>
