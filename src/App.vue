@@ -12,7 +12,7 @@
     </div>
     <div class="container">
       <p>
-        <button class="btn primary" @click="loadComments">Загрузить комментарии</button>
+        <button class="btn primary" @click="loadComments" v-if="!comments.length">Загрузить комментарии</button>
       </p>
       <app-loader v-if="loadingComments"></app-loader>
       <app-comments :comments="comments" v-if="comments.length"></app-comments>
