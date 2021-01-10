@@ -70,7 +70,6 @@ export default {
         await axios.delete(this.dbUrl + `resume/comboBlocks/${id}.json`)
         this.comboBlocks = this.comboBlocks.filter(cb => cb.id !== id)
       } catch (e) {
-        console.warn(e.message)
       }
     },
     async loadResume() {
@@ -91,7 +90,6 @@ export default {
         this.loadingResume = false
       } catch (e) {
         this.loadingResume = false
-        console.warn(e.message)
       }
     }
   },
