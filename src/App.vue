@@ -36,7 +36,6 @@ export default {
     loadingComments: false,
     showModal: false,
     loadingResume: true,
-    deleteConfirmed: false,
     title: null,
     avatar: null,
     comboBlocks: [],
