@@ -6,8 +6,10 @@
         v-if="true"
         :title="title"
         :avatar="avatar"
-        :comboBlocks="comboBlocks"
+        :comboBlocks="sortedComboBlocks"
         @remove="removeCombo"
+        @up="changePosition('up', $event)"
+        @down="changePosition('down', $event)"
       ></app-resume>
     </div>
     <div class="container">
@@ -41,13 +43,30 @@ export default {
     comments: [],
     dbUrl: 'https://vue-3-resume-generator-default-rtdb.europe-west1.firebasedatabase.app/'
   }),
-  computed: {},
+  computed: {
+    sortedComboBlocks() {
+      const temp = this.comboBlocks
+      return temp.sort((a, b) => a.position - b.position)
+    }
+  },
   methods: {
+    async changePosition(direction, id) {
+      const idx = this.comboBlocks.findIndex(cb => cb.id === id)
+      const chainedIdx = direction === 'up' ? idx - 1 : idx + 1
+      const chainedId = this.comboBlocks[chainedIdx].id
+      try {
+        await axios.patch(this.dbUrl + `resume/comboBlocks/${id}.json`, {position: chainedIdx})
+        await axios.patch(this.dbUrl + `resume/comboBlocks/${chainedId}.json`, {position: idx})
+        this.comboBlocks[idx].position = chainedIdx
+        this.comboBlocks[chainedIdx].position = idx
+      } catch (e) {}
+    },
     async updateResume({type, value}) {
       if (type !== 'combo') {
         this[type] = value
         await axios.put(this.dbUrl + `resume/${type}.json`, {value})
       } else {
+        value.position = this.comboBlocks.length
         const {data} = await axios.post(this.dbUrl + 'resume/comboBlocks.json', value)
         value.id = data.name
         this.comboBlocks.push(value)
@@ -95,6 +114,7 @@ export default {
   },
   async mounted() {
     await this.loadResume()
+    console.log(this.comboBlocks)
   }
 }
 </script>

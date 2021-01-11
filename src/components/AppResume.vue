@@ -6,7 +6,11 @@
       <component :is="'app-resume-subtitle'"
                  v-if="comboBlock.subtitle"
                  @remove="$emit('remove', comboBlock.id)"
-                 >{{ comboBlock.subtitle }}
+                 @up="$emit('up', comboBlock.id)"
+                 @down="$emit('down', comboBlock.id)"
+                 :combo-block="comboBlock"
+                 :combo-blocks-length="comboBlocks.length"
+                 >
       </component>
       <component :is="'app-resume-text'" v-if="comboBlock.text">{{ comboBlock.text }}</component>
     </div>
@@ -22,6 +26,7 @@ import AppResumeText from '@/components/AppResumeText'
 
 export default {
   name: 'AppResumeContent',
+  emits: ['remove', 'up', 'down'],
   props: {
     title: String,
     avatar: String,
