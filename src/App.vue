@@ -6,7 +6,7 @@
         v-if="true"
         :title="title"
         :avatar="avatar"
-        :comboBlocks="sortedComboBlocks"
+        :comboBlocks="comboBlocks"
         @remove="removeCombo"
         @up="changePosition('up', $event)"
         @down="changePosition('down', $event)"
@@ -44,32 +44,25 @@ export default {
     dbUrl: 'https://vue-3-resume-generator-default-rtdb.europe-west1.firebasedatabase.app/'
   }),
   computed: {
-    sortedComboBlocks() {
-      const temp = this.comboBlocks
-      return temp.sort((a, b) => a.position - b.position)
-    }
   },
   methods: {
-    async changePosition(direction, id) {
-      const idx = this.comboBlocks.findIndex(cb => cb.id === id)
-      const chainedIdx = direction === 'up' ? idx - 1 : idx + 1
-      const chainedId = this.comboBlocks[chainedIdx].id
+    async changePosition(direction, fromIdx) {
+      const toIdx = direction === 'up' ? fromIdx - 1 : fromIdx + 1
       try {
-        await axios.patch(this.dbUrl + `resume/comboBlocks/${id}.json`, {position: chainedIdx})
-        await axios.patch(this.dbUrl + `resume/comboBlocks/${chainedId}.json`, {position: idx})
-        this.comboBlocks[idx].position = chainedIdx
-        this.comboBlocks[chainedIdx].position = idx
-      } catch (e) {}
+        const element = this.comboBlocks[fromIdx]
+        this.comboBlocks.splice(fromIdx, 1)
+        this.comboBlocks.splice(toIdx, 0, element)
+        await axios.put(this.dbUrl + 'resume/comboBlocks.json', this.comboBlocks)
+      } catch (e) {
+      }
     },
     async updateResume({type, value}) {
       if (type !== 'combo') {
         this[type] = value
         await axios.put(this.dbUrl + `resume/${type}.json`, {value})
       } else {
-        value.position = this.comboBlocks.length
-        const {data} = await axios.post(this.dbUrl + 'resume/comboBlocks.json', value)
-        value.id = data.name
         this.comboBlocks.push(value)
+        await axios.put(this.dbUrl + 'resume/comboBlocks.json', this.comboBlocks)
       }
     },
     async loadComments() {
@@ -84,10 +77,10 @@ export default {
         this.loadingComments = false
       }
     },
-    async removeCombo(id) {
+    async removeCombo(idx) {
       try {
-        await axios.delete(this.dbUrl + `resume/comboBlocks/${id}.json`)
-        this.comboBlocks = this.comboBlocks.filter(cb => cb.id !== id)
+        this.comboBlocks.splice(idx, 1)
+        await axios.put(this.dbUrl + 'resume/comboBlocks.json', this.comboBlocks)
       } catch (e) {
       }
     },
@@ -96,14 +89,7 @@ export default {
         const {data} = await axios.get(this.dbUrl + 'resume.json')
         if (data) {
           Object.keys(data).forEach(key => {
-            if (key === 'comboBlocks') {
-              this.comboBlocks = Object.keys(data[key]).map(idx => ({
-                id: idx,
-                ...data[key][idx]
-              }))
-            } else {
-              this[key] = data[key].value
-            }
+            this[key] = key === 'comboBlocks' ? data[key] : data[key].value
           })
         }
         this.loadingResume = false
@@ -114,7 +100,6 @@ export default {
   },
   async mounted() {
     await this.loadResume()
-    console.log(this.comboBlocks)
   }
 }
 </script>

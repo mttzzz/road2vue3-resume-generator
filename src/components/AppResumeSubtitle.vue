@@ -1,10 +1,9 @@
 <template>
   <h2>
-    {{ comboBlock.subtitle }}
+    {{ subtitle }}
     <div>
-      <img src="./../assets/icons/up-arrow.svg" alt="oops" @click="$emit('up')" v-if="comboBlock.position !== 0">
-      <img src="./../assets/icons/down-arrow.svg" alt="oops" @click="$emit('down')"
-           v-if="comboBlock.position !== comboBlocksLength - 1">
+      <img src="./../assets/icons/up-arrow.svg" alt="oops" @click="$emit('up')" v-if="idx > 0">
+      <img src="./../assets/icons/down-arrow.svg" alt="oops" @click="$emit('down')" v-if="idx !== comboBlocksLength - 1">
       <img src="./../assets/icons/delete.svg" alt="oops" @click="$emit('remove')">
     </div>
   </h2>
@@ -14,7 +13,7 @@
 export default {
   name: 'AppResumeSubtitle',
   emits: ['remove', 'up', 'down'],
-  props: ['comboBlock', 'comboBlocksLength']
+  props: ['subtitle', 'comboBlocksLength', 'idx']
 }
 </script>
 
