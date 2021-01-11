@@ -1,6 +1,10 @@
 <template>
   <div class="card card-w70">
-    <component :is="'app-resume-title'" v-if="title">{{ title }}</component>
+    <component :is="'app-resume-title'"
+               v-if="title"
+               :title="title"
+               @update="$emit('update', 'title', $event)"
+    ></component>
     <component :is="'app-resume-avatar'" v-if="avatar" :avatar="avatar"></component>
     <div v-for="(comboBlock, idx) in comboBlocks" :key="idx">
       <component :is="'app-resume-subtitle'"
@@ -10,7 +14,7 @@
                  :subtitle="comboBlock.subtitle"
                  :idx="idx"
                  :combo-blocks-length="comboBlocks.length"
-                 >
+      >
       </component>
       <component :is="'app-resume-text'">{{ comboBlock.text }}</component>
     </div>
@@ -26,7 +30,7 @@ import AppResumeText from '@/components/AppResumeText'
 
 export default {
   name: 'AppResumeContent',
-  emits: ['remove', 'up', 'down'],
+  emits: ['remove', 'up', 'down', 'update'],
   props: {
     title: String,
     avatar: String,
