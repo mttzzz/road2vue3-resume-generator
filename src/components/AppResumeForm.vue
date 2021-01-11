@@ -27,8 +27,8 @@
 export default {
   name: 'AppResumeForm',
   emits: {
-    submit: (type, value) => {
-      if (type && value) {
+    submit: (data) => {
+      if (typeof data === 'object') {
         return true
       } else {
         console.warn('Invalid submit event payload!')

@@ -12,7 +12,8 @@
     "axios": "^0.21.1",
     "core-js": "^3.6.5",
     "register-service-worker": "^1.7.1",
-    "vue": "^3.0.0"
+    "vue": "^3.0.0",
+    "vue-dk-toast": "^1.1.6"
   },
   "devDependencies": {
     "@vue/cli-plugin-babel": "~4.5.0",

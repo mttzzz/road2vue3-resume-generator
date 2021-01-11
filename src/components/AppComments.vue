@@ -18,9 +18,7 @@ export default {
   props: {
     comments: Array
   },
-  data: () => ({}),
   mounted() {
-    console.log(this.comments)
   }
 }
 </script>
