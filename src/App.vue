@@ -39,14 +39,13 @@ export default {
     title: null,
     avatar: null,
     comboBlocks: [],
-    comments: [],
-    dbUrl: 'https://vue-3-resume-generator-default-rtdb.europe-west1.firebasedatabase.app/'
+    comments: []
   }),
   computed: {},
   methods: {
     async update(type, value) {
       this[type] = value
-      await axios.put(this.dbUrl + `resume/${type}.json`, {value})
+      await axios.put(process.env.VUE_APP_DB_URL + `resume/${type}.json`, {value})
       this.notify('#42b983', 'Обновили!')
     },
     notify(color, text) {
@@ -62,7 +61,7 @@ export default {
         const element = this.comboBlocks[fromIdx]
         this.comboBlocks.splice(fromIdx, 1)
         this.comboBlocks.splice(toIdx, 0, element)
-        await axios.put(this.dbUrl + 'resume/comboBlocks.json', this.comboBlocks)
+        await axios.put(process.env.VUE_APP_DB_URL + 'resume/comboBlocks.json', this.comboBlocks)
         this.notify('#42b983', 'Поменяли местами!')
       } catch (e) {
       }
@@ -74,8 +73,9 @@ export default {
           await axios.put(this.dbUrl + `resume/${type}.json`, {value})
           this.title = value
         } else {
+          value.id = Date.now()
           this.comboBlocks.push(value)
-          await axios.put(this.dbUrl + 'resume/comboBlocks.json', this.comboBlocks)
+          await axios.put(process.env.VUE_APP_DB_URL + 'resume/comboBlocks.json', this.comboBlocks)
         }
         this.notify('#42b983', 'Обновили!!!')
       } catch (e) {
@@ -102,7 +102,7 @@ export default {
     async removeCombo(idx) {
       try {
         this.comboBlocks.splice(idx, 1)
-        await axios.put(this.dbUrl + 'resume/comboBlocks.json', this.comboBlocks)
+        await axios.put(process.env.VUE_APP_DB_URL + 'resume/comboBlocks.json', this.comboBlocks)
         this.notify('#42b983', 'Раздел успешно удален!')
       } catch (e) {
         this.notify('#EF4444', `Ошибка при удалении раздела. ${e.message}`)
@@ -110,7 +110,7 @@ export default {
     },
     async loadResume() {
       try {
-        const {data} = await axios.get(this.dbUrl + 'resume.json')
+        const {data} = await axios.get(process.env.VUE_APP_DB_URL + 'resume.json')
         if (data) {
           Object.keys(data).forEach(key => {
             this[key] = key === 'comboBlocks' ? data[key] : data[key].value

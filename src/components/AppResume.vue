@@ -1,13 +1,13 @@
 <template>
   <div class="card card-w70">
-    <component :is="'app-resume-title'"
+    <app-resume-title
                v-if="title"
                :title="title"
                @update="$emit('update', 'title', $event)"
-    ></component>
-    <component :is="'app-resume-avatar'" v-if="avatar" :avatar="avatar"></component>
-    <div v-for="(comboBlock, idx) in comboBlocks" :key="idx">
-      <component :is="'app-resume-subtitle'"
+    ></app-resume-title>
+    <app-resume-avatar v-if="avatar" :avatar="avatar"></app-resume-avatar>
+    <div v-for="(comboBlock, idx) in comboBlocks" :key="comboBlock.id">
+      <app-resume-subtitle
                  @remove="$emit('remove', idx)"
                  @up="$emit('up', idx)"
                  @down="$emit('down', idx)"
@@ -15,8 +15,8 @@
                  :idx="idx"
                  :combo-blocks-length="comboBlocks.length"
       >
-      </component>
-      <component :is="'app-resume-text'">{{ comboBlock.text }}</component>
+      </app-resume-subtitle>
+      <app-resume-text>{{ comboBlock.text }}</app-resume-text>
     </div>
     <h3 v-if="isEmptyResume">Добавьте первый блок, чтобы увидеть результат</h3>
   </div>
